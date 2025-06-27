@@ -95,10 +95,10 @@ uv run tf_module_update.py --use-token --path ./terraform
 **Output:**
 
 ```
-Processing module: datadog (source: app.terraform.io/devolksbank-ep/buildingblock-datadog/aws)
+Processing module: datadog (source: app.terraform.io/company/module-s3/aws)
 | UPDATE? | NAME                     | CONSTRAINT | VERSION | LATEST MATCHING | LATEST |
 |---------|--------------------------|------------|---------|-----------------|--------|
-| (Y)     | datadog                  | 0.5.0      | 0.5.0   |                 | 0.5.1  |
+| (Y)     | module-3                 | 0.5.0      | 0.5.0   |                 | 0.5.1  |
 ```
 
 **Check and prompt for updates:**
@@ -129,8 +129,8 @@ The script outputs a table with the following columns:
 The script expects `.tf` files with `module` blocks like:
 
 ```hcl
-module "datadog" {
-  source  = "app.terraform.io/devolksbank-ep/buildingblock-datadog/aws"
+module "s3" {
+  source  = "app.terraform.io/company/module-s3/aws"
   version = "0.5.0"
 }
 
