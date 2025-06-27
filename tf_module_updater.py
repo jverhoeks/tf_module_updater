@@ -3,6 +3,7 @@
 import os
 import json
 import argparse
+import logging
 import requests
 import hcl2
 from packaging import version, specifiers
@@ -15,7 +16,7 @@ def get_terraform_token():
             data = json.load(f)
         return data['credentials']['app.terraform.io']['token']
     except (FileNotFoundError, KeyError, json.JSONDecodeError) as e:
-        print(f"Error: Failed to read Terraform token from ~/.terraform.d/credentials.tfrc.json: {e}")
+        logging.error(f"Failed to read Terraform token from ~/.terraform.d/credentials.tfrc.json: {e}")
         exit(1)
 
 def get_modules_path(hostname):
@@ -28,8 +29,8 @@ def get_modules_path(hostname):
         modules_path = data.get('modules.v1', '/api/registry/v1/modules/')
         return modules_path.rstrip('/')  # Ensure no trailing slash
     except requests.RequestException as e:
-        print(f"Error fetching .well-known/terraform.json from {hostname}: {e}")
-        print("Falling back to default modules path: /api/registry/v1/modules")
+        logging.error(f"Error fetching .well-known/terraform.json from {hostname}: {e}")
+        logging.info("Falling back to default modules path: /api/registry/v1/modules")
         return '/api/registry/v1/modules'
 
 def parse_module_source(source):
@@ -54,7 +55,7 @@ def parse_module_source(source):
             'provider': parts[2]
         }
     else:
-        print(f"Warning: Invalid module source format: {source}")
+        logging.warning(f"Invalid module source format: {source}")
         return None
 
 def get_module_versions(module_info, token=None):
@@ -157,7 +158,11 @@ def main():
     parser.add_argument('--path', default='.', help="Directory to scan for Terraform files (default: current directory)")
     parser.add_argument('--update', action='store_true', help="Prompt to update module versions")
     parser.add_argument('--all', action='store_true', help="Update all modules to latest matching or latest version without prompting")
+    parser.add_argument('--log', default='INFO', choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'], help="Set the logging level (default: INFO)")
     args = parser.parse_args()
+
+    # Configure logging
+    logging.basicConfig(level=args.log, format='%(asctime)s - %(levelname)s - %(message)s')
 
     # Validate path
     if not os.path.isdir(args.path):
